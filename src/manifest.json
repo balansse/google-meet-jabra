@@ -1,22 +1,36 @@
 {
-  "manifest_version": 2,
+  "manifest_version": 3,
   "name": "Google Meet - Jabra Call Control support",
   "description": "Adds Jabra call control support to Google Meet",
   "icons": {
-    "16": "icons/headset16.png",
-    "48": "icons/headset48.png",
-    "128": "icons/headset128.png"
+    "16": "icon-16.png",
+    "48": "icon-48.png",
+    "128": "icon-128.png"
   },
   "content_scripts": [
     {
-      "matches": ["https://meet.google.com/*"],
+      "matches": [
+        "https://meet.google.com/*"
+      ],
       "js": [
-        "content-script.bundle.js",
-        "vendors-node_modules_gnaudio_jabra-js_browser-esm_init-handler-3ac6f094_js.bundle.js",
-        "node_modules_gnaudio_jabra-js_browser-esm_web-hid-transport-d03bac85_js.bundle.js",
-        "node_modules_gnaudio_jabra-js_browser-esm_chrome-extension-transport-4b9087bd_js.bundle.js"
+        "jabra.js",
+        "contentScript.bundle.js"
+      ],
+      "css": [
+        "content.styles.css"
       ]
     }
   ],
-  "permissions": []
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "content.styles.css",
+        "jabra.js",
+        "icon-16.png",
+        "icon-48.png",
+        "icon-128.png"
+      ],
+      "matches": []
+    }
+  ]
 }

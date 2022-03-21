@@ -1,5 +1,5 @@
 .DS_Store
 releases
-dist
+build
 node_modules
 .vscode
