@@ -1,3 +1,5 @@
+const JABRA_CONNECTING = "Connecting to Jabra device...";
+
 const MIC_OFF = {
     de: "Mikrofon deaktivieren",
     en: "Turn off microphone",
@@ -72,7 +74,13 @@ let jabraButton = { span: null, button: null, label: null };
         };
 
         jabraButton.label = jabraButton.button.lastElementChild;
-        jabraButton.label.innerText = "Connecting to Jabra device...";
+        jabraButton.label.innerText = JABRA_CONNECTING;
+
+        setTimeout(() => {
+            if (jabraButton.label.innerText === JABRA_CONNECTING) {
+                jabraButton.label.innerText = "Click here to connect";
+            }
+        }, 5000);
 
         avButtonSpan().closest('div').append(jabraButton.span);
     }
