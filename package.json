@@ -1,6 +1,6 @@
 {
   "name": "chrome-extension-google-meet-jabra-support",
-  "version": "1.0",
+  "version": "1.0.1",
   "description": "Adds Jabra call control support to Google Meet",
   "license": "MIT",
   "repository": {
