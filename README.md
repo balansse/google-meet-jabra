@@ -1,8 +1,26 @@
-<img src="src/assets/img/icon-128.png" width="64"/>
+<SPAN ALIGN="CENTER">
 
-# Google Meet - Jabra Call Control support
+[![Google Meet - Jabra Call Control support](media/Logo-cropped.png)](https://github.com/balansse/google-meet-jabra)
 
-This is a basic Chrome Extension that adds Jabra call control support to Google Meet.
+## Adds Jabra call control support to [Google Meet](https://meet.google.com).
+   
+[![Chrome Web Store](https://storage.googleapis.com/web-dev-uploads/image/WlD8wC6g8khYWPJUsQceQkhXSlv1/UV4C4ybeBTsZt43U4xis.png)](https://chrome.google.com/webstore/detail/google-meet-jabra-call-co/jjnlhhhmaidobmeghnnmkbhkebpjhohp) 
+
+</SPAN>
+
+## Overview
+
+Main features:
+- Auto busy light on during meetings
+- Sync device mute status with Google Meet mute button
+- Mute Google Meet from the device
+
+Supports devices working through Jabra Link dongle; controlling devices connected directly to Bluetooth are not yet supported.
+
+Tested with Jabra Evolve2 85 and Jabra Link 380. 
+
+Please feel free to submit issues and suggestions to 
+https://github.com/balansse/google-meet-jabra/issues
 
 ## Installing and Running
 
