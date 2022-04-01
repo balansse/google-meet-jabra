@@ -3,8 +3,9 @@
 [![Google Meet - Jabra Call Control support](media/Logo-cropped.png)](https://github.com/balansse/google-meet-jabra)
 
 ## Adds Jabra call control support to [Google Meet](https://meet.google.com).
-   
-[![Chrome Web Store](https://storage.googleapis.com/web-dev-uploads/image/WlD8wC6g8khYWPJUsQceQkhXSlv1/UV4C4ybeBTsZt43U4xis.png)](https://chrome.google.com/webstore/detail/google-meet-jabra-call-co/jjnlhhhmaidobmeghnnmkbhkebpjhohp) 
+[![Chrome Extension Version](https://img.shields.io/chrome-web-store/v/jjnlhhhmaidobmeghnnmkbhkebpjhohp?label=version&logo=google-chrome&logoColor=fff)
+![Chrome Extension Users](https://img.shields.io/chrome-web-store/users/jjnlhhhmaidobmeghnnmkbhkebpjhohp?&logo=google-chrome&logoColor=fff)
+![Chrome Extension Rating](https://img.shields.io/chrome-web-store/stars/jjnlhhhmaidobmeghnnmkbhkebpjhohp?logo=google-chrome&logoColor=fff)](https://chrome.google.com/webstore/detail/google-meet-jabra-call-co/jjnlhhhmaidobmeghnnmkbhkebpjhohp) 
 
 </SPAN>
 
