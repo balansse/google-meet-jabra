@@ -1,0 +1,70 @@
+.jabra-hid-dialog {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0px 1px 2px 0px rgb(60 64 67 / 30%), 0px 2px 6px 2px rgb(60 64 67 / 15%);
+    right: 50px;
+    position: absolute;
+    top: 50px;
+    width: 360px;
+    z-index: 1;
+    font-family: 'Google Sans', Roboto, Arial, sans-serif;
+    font-size: .875rem;
+}
+
+.jabra-hid-dialog .header {
+    align-items: center;
+    color: #202124;
+    display: flex;
+    padding: 12px 12px 0 24px;
+}
+
+.jabra-hid-dialog .header h2 {
+    font-size: 1.125rem;
+    font-weight: 400;
+    letter-spacing: 0;
+    line-height: 1.5rem;
+    box-flex: 1;
+    flex-grow: 1;
+}
+
+.jabra-hid-dialog .content {
+    padding: 0 24px 24px 24px;
+}
+
+.jabra-hid-dialog .content .text {
+    letter-spacing: .01428571em;
+    font-weight: 400;
+    line-height: 1.25rem;
+    color: #3c4043;
+    margin-bottom: 8px;
+}
+
+.jabra-hid-dialog .button {
+    color: #fff;
+    background-color: #1a73e8;
+    padding: 0 16px 0 12px;
+    margin: 0;
+    height: 36px;
+    border-radius: 4px;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    min-width: 64px;
+    border: none;
+    outline: none;
+    line-height: inherit;
+}
+
+.jabra-hid-dialog .button:hover {
+    background-color: #174ea6;
+    cursor: pointer;
+}
+
+.jabra-hid-dialog .button span {
+    font-family: 'Google Sans', Roboto, Arial, sans-serif;
+    letter-spacing: .0107142857em;
+    font-weight: 500;
+    text-transform: none;
+}

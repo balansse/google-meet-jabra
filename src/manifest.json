@@ -24,13 +24,11 @@
   "web_accessible_resources": [
     {
       "resources": [
+        "hid_dialog.html",
         "content.styles.css",
-        "jabra.js",
-        "icon-16.png",
-        "icon-48.png",
-        "icon-128.png"
+        "jabra.js"
       ],
-      "matches": []
+      "matches": ["<all_urls>"]
     }
   ]
 }
