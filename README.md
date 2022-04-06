@@ -18,7 +18,14 @@ Main features:
 
 Supports devices working through Jabra Link dongle; controlling devices connected directly to Bluetooth are not yet supported.
 
-Tested with Jabra Evolve2 85 and Jabra Link 380. 
+
+Tested with |
+--- |
+Jabra Evolve2 85 / Jabra Link 380
+Jabra Elite 85h / Jabra Link 370
+Jabra Evolve 40
+...
+
 
 Please feel free to submit issues and suggestions to 
 https://github.com/balansse/google-meet-jabra/issues
