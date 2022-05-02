@@ -24,6 +24,7 @@ Tested with |
 Jabra Evolve2 85 / Jabra Link 380
 Jabra Elite 85h / Jabra Link 370
 Jabra Evolve 40
+Jabra 510
 ...
 
 
