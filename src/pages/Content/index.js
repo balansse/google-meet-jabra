@@ -112,25 +112,34 @@ let jabraButton = { span: null, button: null, label: null };
         }
     });
 
-    const callStartObserver = new MutationObserver((changes) => {
+    const callStartObserver = new MutationObserver(async (changes) => {
         for (const change of changes) {
             if (change.target.classList.contains('google-material-icons')) {
                 for (const node of change.addedNodes) {
                     if (node.nodeType === Node.TEXT_NODE && node.data === 'call_end') {
 
                         if (!jabraDevice) {
-                            fetch(chrome.runtime.getURL('/hid_dialog.html'))
-                            .then(r => r.text())
-                            .then(html => {
-                                document.querySelector('c-wiz').insertAdjacentHTML('beforeend', html);
 
-                                document.querySelector('.jabra-hid-dialog button').onclick = async (e) => {
-                                    let connectedDevice = await jabra.webHidPairing();
-                                    if (connectedDevice && jabraDevice == undefined) {
+                            let devices = await window.navigator.hid.getDevices();
+                            let jabraHID = devices.find(element => element.vendorId === JABRA_VENDOR_ID);
+                            if (!jabraHID) {
+                                fetch(chrome.runtime.getURL('/hid_dialog.html'))
+                                .then(r => r.text())
+                                .then(html => {
+                                    document.querySelector('c-wiz').insertAdjacentHTML('beforeend', html);
+    
+                                    document.querySelector('.jabra-hid-dialog .button').onclick = async (e) => {
+                                        let connectedDevice = await jabra.webHidPairing();
+                                        if (connectedDevice) {
+                                            document.querySelector('.jabra-hid-dialog').remove();
+                                        }
+                                    };
+    
+                                    document.querySelector('.jabra-hid-dialog .button-close').onclick = async (e) => {
                                         document.querySelector('.jabra-hid-dialog').remove();
-                                    }
-                                };
-                            });
+                                    };
+                                });
+                            }
                         }
 
                         jabraDevice?.offHook(true);

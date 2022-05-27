@@ -58,7 +58,7 @@
 }
 
 .jabra-hid-dialog .button:hover {
-    background-color: #174ea6;
+    background-color: #1b66ca;
     cursor: pointer;
 }
 
@@ -67,4 +67,20 @@
     letter-spacing: .0107142857em;
     font-weight: 500;
     text-transform: none;
+}
+
+.jabra-hid-dialog .button-close {
+    font-size: 24px;
+    width: 48px;
+    height: 48px;
+    padding: 12px;
+    border: none;
+    background-color: transparent;
+    color: inherit;
+}
+
+.jabra-hid-dialog .button-close:hover {
+    background-color: #f5f5f5;
+    border-radius: 50%;
+    cursor: pointer;
 }
