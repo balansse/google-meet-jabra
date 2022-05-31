@@ -22,6 +22,7 @@ Supports devices working through Jabra Link dongle; controlling devices connecte
 Tested with |
 --- |
 Jabra Evolve2 85 / Jabra Link 380
+Jabra Evolve2 75 / Jabra Link 380
 Jabra Elite 85h / Jabra Link 370
 Jabra Evolve 40
 Jabra 510
