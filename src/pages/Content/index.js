@@ -1,4 +1,4 @@
-import { takeUntil } from 'rxjs/operators';
+import { init, SignalType, CallControlFactory, RequestedBrowserTransport, webHidPairing, ErrorType, LogLevel }  from '@gnaudio/jabra-js'
 
 const JABRA_PARTNER_KEY = 'fafd-0b91d5be-f026-4198-b8b4-42685884d7ca';
 const JABRA_APP_ID = 'chrome-google-meet';
@@ -36,22 +36,22 @@ let jabraButton = { span: null, button: null, label: null };
 
     showJabraButton();
 
-    const jabraSdk = await jabra.init({
-        transport: jabra.RequestedBrowserTransport.WEB_HID,
+    const jabraSdk = await init({
+        transport: RequestedBrowserTransport.WEB_HID,
         partnerKey: JABRA_PARTNER_KEY,
         appId: JABRA_APP_ID,
         appName: JABRA_APP_NAME,
         logger: {
             write(logEvent) {
-                if (logEvent.level === 'error') {
-                console.log(logEvent.message, logEvent.layer);
+                if (logEvent.level === LogLevel.ERROR) {
+                    console.log(logEvent.message, logEvent.layer);
                 }
                 // Ignore messages with other log levels
             }
         }
     });
 
-    const callControlFactory = new jabra.CallControlFactory(jabraSdk);
+    const callControlFactory = new CallControlFactory(jabraSdk);
 
     jabraSdk.deviceAdded.subscribe(async (device) => {
 
@@ -80,17 +80,17 @@ let jabraButton = { span: null, button: null, label: null };
             (signal) => {
                 console.log(signal.type, signal.value);
                 switch (signal.type) {
-                    case jabra.SignalType.PHONE_MUTE:
+                    case SignalType.PHONE_MUTE:
                         var button = micToggleButton();
                         button?.click();
                         break;
                     
-                    case jabra.SignalType.HOOK_SWITCH:
+                    case SignalType.HOOK_SWITCH:
                         var button = signal.value ? startCallButton() : endCallButton();
                         button?.click();
                         break;
 
-                    case jabra.SignalType.GN_PSEUDO_HOOK_SWITCH:
+                    case SignalType.GN_PSEUDO_HOOK_SWITCH:
                         startCallButton()?.click();
                         break;
                 }
@@ -145,7 +145,7 @@ let jabraButton = { span: null, button: null, label: null };
             getElementByIconName('inventory', jabraButton.span).innerText = 'headset_mic';
     
             jabraButton.button.onclick = async (e) => {
-                let connectedDevice = await jabra.webHidPairing();
+                let connectedDevice = webHidPairing();
                 if (connectedDevice && deviceCallControlList.length == 0) {
                     jabraButton.label.innerText = JABRA_CONNECTING;
                 }
@@ -189,7 +189,7 @@ let jabraButton = { span: null, button: null, label: null };
                                     document.querySelector('c-wiz').insertAdjacentHTML('beforeend', html);
     
                                     document.querySelector('.jabra-hid-dialog .button').onclick = async (e) => {
-                                        let connectedDevice = await jabra.webHidPairing();
+                                        let connectedDevice = await webHidPairing();
                                         if (connectedDevice) {
                                             document.querySelector('.jabra-hid-dialog').remove();
                                         }

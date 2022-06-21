@@ -105,6 +105,9 @@ var options = {
       .concat(['.js', '.jsx', '.ts', '.tsx', '.css']),
   },
   plugins: [
+    new webpack.optimize.LimitChunkCountPlugin({
+      maxChunks: 1
+    }),
     new CleanWebpackPlugin({ verbose: false }),
     new webpack.ProgressPlugin(),
     // expose and write the allowed env vars on the compiled bundle
@@ -169,15 +172,6 @@ var options = {
         {
           from: 'src/assets/img/icon-16.png',
           to: path.join(__dirname, 'build'),
-          force: true,
-        },
-      ],
-    }),
-    new CopyWebpackPlugin({
-      patterns: [
-        {
-          from: 'node_modules/@gnaudio/jabra-js/browser-umd/index.js',
-          to: path.join(__dirname, 'build/jabra.js'),
           force: true,
         },
       ],

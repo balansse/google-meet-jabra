@@ -13,7 +13,6 @@
         "https://meet.google.com/*"
       ],
       "js": [
-        "jabra.js",
         "contentScript.bundle.js"
       ],
       "css": [
@@ -25,8 +24,7 @@
     {
       "resources": [
         "hid_dialog.html",
-        "content.styles.css",
-        "jabra.js"
+        "content.styles.css"
       ],
       "matches": ["<all_urls>"]
     }
