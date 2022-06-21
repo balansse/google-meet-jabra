@@ -1,3 +1,5 @@
+import { takeUntil } from 'rxjs/operators';
+
 const JABRA_PARTNER_KEY = 'fafd-0b91d5be-f026-4198-b8b4-42685884d7ca';
 const JABRA_APP_ID = 'chrome-google-meet';
 const JABRA_APP_NAME = 'Google Meet Chrome extension';
@@ -27,67 +29,56 @@ const startCallButton = () => Array.from(document.querySelectorAll('span')).find
 
 const avButtonSpan = () => getElementByIconName('inventory')?.closest('[role="row"]');
 
-var jabraDevice;
+var deviceCallControlList = [];
 let jabraButton = { span: null, button: null, label: null };
 
 (async () => {
 
-    const jabraApi = await jabra.init({
+    showJabraButton();
+
+    const jabraSdk = await jabra.init({
         transport: jabra.RequestedBrowserTransport.WEB_HID,
         partnerKey: JABRA_PARTNER_KEY,
         appId: JABRA_APP_ID,
         appName: JABRA_APP_NAME,
         logger: {
             write(logEvent) {
-              if (logEvent.level === 'error') {
+                if (logEvent.level === 'error') {
                 console.log(logEvent.message, logEvent.layer);
-              }
-              // Ignore messages with other log levels
+                }
+                // Ignore messages with other log levels
             }
-          }
+        }
     });
 
-    let span = avButtonSpan();
+    const callControlFactory = new jabra.CallControlFactory(jabraSdk);
 
-    if (span !== undefined) {
-        jabraButton.span = span.cloneNode(true);
-        jabraButton.button = jabraButton.span.querySelector('button');
-        ['jscontroller', 'jsaction', 'jsname'].forEach(attribute => jabraButton.button.removeAttribute(attribute));
+    jabraSdk.deviceAdded.subscribe(async (device) => {
 
-        getElementByIconName('inventory', jabraButton.span).innerText = 'headset_mic';
-
-        jabraButton.button.onclick = async (e) => {
-            let connectedDevice = await jabra.webHidPairing();
-            if (connectedDevice && jabraDevice == undefined) {
-                jabraButton.label.innerText = JABRA_CONNECTING;
-            }
-        };
-
-        let devices = await window.navigator.hid.getDevices();
-        let jabraHID = devices.find(element => element.vendorId === JABRA_VENDOR_ID);
-
-        jabraButton.label = jabraButton.button.lastElementChild;
-        jabraButton.label.innerText = jabraHID ? JABRA_CONNECTING : JABRA_HID_CONNECTION_REQUEST;
-
-        span.closest('div').append(jabraButton.span);
-    }
-
-    const callControlFactory = new jabra.CallControlFactory(jabraApi);
-
-    jabraApi.deviceAdded.subscribe(async (device) => {
+        //Ignore devices that do not support call control
         if (!callControlFactory.supportsCallControl(device)) {
             return;
         }
+        
+        const deviceCallControl = await callControlFactory.createCallControl(device);
 
-        jabraDevice = await callControlFactory.createCallControl(device);
+        await addDeviceCallControl(deviceCallControl);
+    });
 
-        await jabraDevice.takeCallLock();
+    async function addDeviceCallControl(deviceCallControl) {
+        //Try to get a call lock on the device, retry if failed, if retry limit reached do not connect
+        const maxRetryCount = 5;
+        let retryCount = 0
+        let callLockStatus = false;
+        while (!callLockStatus && retryCount < maxRetryCount) {
+            callLockStatus = await deviceCallControl.takeCallLock();
+            retryCount++;
+        }
+        if (!callLockStatus) return;
 
-        if (jabraButton.label !== null) jabraButton.label.innerText = device.name;
-
-        jabraDevice.deviceSignals.subscribe(
+        deviceCallControl.deviceSignals.subscribe(
             (signal) => {
-                console.log(signal);
+                console.log(signal.type, signal.value);
                 switch (signal.type) {
                     case jabra.SignalType.PHONE_MUTE:
                         var button = micToggleButton();
@@ -106,11 +97,80 @@ let jabraButton = { span: null, button: null, label: null };
             }
         );
 
-        //Instant meeting
+        deviceCallControl.onDisconnect.subscribe(async () => {
+            let device = deviceCallControl.device;
+            
+            // Whenever the connection disconnects, see if there is another connection which
+            // is capable of call control.
+            if (!callControlFactory.supportsCallControl(device)) {
+                removeDeviceCallControl(device);
+                return;
+            }
+
+            // There is an available connection, create a new ICallControl
+            deviceCallControl = await callControlFactory.createCallControl(device);
+            console.log('Connection remains - creating a new call control interface.');
+
+            // Restore the state of the device.
+            await addDeviceCallControl(deviceCallControl);
+        });
+
+        //Set status if already in a call (Instant meeting)
         if (endCallButton()) {
-            jabraDevice?.offHook(true);
+            deviceCallControl.offHook(true);
         }
-    });
+
+        deviceCallControlList.push(deviceCallControl);
+
+        updateConnectedDeviceNames();
+    }
+
+    function removeDeviceCallControl(removedDevice) {
+        console.log(`Removed: ${removedDevice.name} - ${removedDevice.productId}`);
+
+        let removedDeviceIndex = deviceCallControlList.findIndex(deviceCallControl => deviceCallControl.device.serialNumber === removedDevice.serialNumber)
+        if (removedDeviceIndex !== -1)
+            deviceCallControlList.splice(removedDeviceIndex, 1);
+
+        updateConnectedDeviceNames();
+    }
+
+    async function showJabraButton() {
+        let span = avButtonSpan();
+        if (span !== undefined) {
+            jabraButton.span = span.cloneNode(true);
+            jabraButton.button = jabraButton.span.querySelector('button');
+            ['jscontroller', 'jsaction', 'jsname'].forEach(attribute => jabraButton.button.removeAttribute(attribute));
+    
+            getElementByIconName('inventory', jabraButton.span).innerText = 'headset_mic';
+    
+            jabraButton.button.onclick = async (e) => {
+                let connectedDevice = await jabra.webHidPairing();
+                if (connectedDevice && deviceCallControlList.length == 0) {
+                    jabraButton.label.innerText = JABRA_CONNECTING;
+                }
+            };
+    
+            let devices = await window.navigator.hid.getDevices();
+            let jabraHID = devices.find(element => element.vendorId === JABRA_VENDOR_ID);
+    
+            jabraButton.label = jabraButton.button.lastElementChild;
+            jabraButton.label.innerText = jabraHID ? JABRA_CONNECTING : JABRA_HID_CONNECTION_REQUEST;
+    
+            span.closest('div').append(jabraButton.span);
+        }
+    }
+
+    function updateConnectedDeviceNames() {
+        if (jabraButton.label !== null) {
+            let deviceNames = '';
+            deviceCallControlList.forEach(deviceCallControl => {
+                deviceNames = deviceNames.length > 0 ? deviceNames + ' | ' + deviceCallControl.device.name : deviceCallControl.device.name;
+            });
+
+            jabraButton.label.innerText = deviceNames;
+        }
+    }
 
     const callStartObserver = new MutationObserver(async (changes) => {
         for (const change of changes) {
@@ -118,7 +178,7 @@ let jabraButton = { span: null, button: null, label: null };
                 for (const node of change.addedNodes) {
                     if (node.nodeType === Node.TEXT_NODE && node.data === 'call_end') {
 
-                        if (!jabraDevice) {
+                        if (deviceCallControlList.length === 0) {
 
                             let devices = await window.navigator.hid.getDevices();
                             let jabraHID = devices.find(element => element.vendorId === JABRA_VENDOR_ID);
@@ -141,9 +201,11 @@ let jabraButton = { span: null, button: null, label: null };
                                 });
                             }
                         }
-
-                        jabraDevice?.offHook(true);
-                            
+                        
+                        deviceCallControlList.forEach(async deviceCallControl => {
+                            deviceCallControl.offHook(true);
+                        });
+                         
                         return;
                     }
                 }
@@ -162,7 +224,11 @@ let jabraButton = { span: null, button: null, label: null };
                     if (node.nodeType === Node.ELEMENT_NODE) {
                         let callEnded = node.querySelector('div[data-call-ended]')?.dataset.callEnded === 'true';
                         if (callEnded === true) {
-                            jabraDevice?.offHook(false);
+
+                            deviceCallControlList.forEach(async deviceCallControl => {
+                                deviceCallControl.offHook(false);
+                            });
+
                             return;
                         }
                     }
@@ -178,7 +244,11 @@ let jabraButton = { span: null, button: null, label: null };
     const muteObserver = new MutationObserver((changes) => {
         for (const change of changes) {
             if (change.target === micToggleButton() && change.attributeName === 'data-is-muted') {
-                jabraDevice?.mute(change.target.dataset.isMuted === 'true');
+
+                deviceCallControlList.forEach(deviceCallControl => {
+                    deviceCallControl.mute(change.target.dataset.isMuted === 'true');
+                });
+
                 return;
             }
         }
@@ -189,8 +259,15 @@ let jabraButton = { span: null, button: null, label: null };
     });
 
     window.addEventListener('beforeunload', function () {
-        jabraDevice?.offHook(false);
-        jabraDevice?.releaseCallLock();
+        deviceCallControlList.forEach(deviceCallControl => {
+            try {
+                deviceCallControl.offHook(false);
+                deviceCallControl.releaseCallLock();
+            }
+            catch (err) {
+                console.log(err);
+            }
+        });
     });
 
 })();
