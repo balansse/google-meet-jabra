@@ -1,16 +1,22 @@
 <div class="jabra-hid-dialog">
     <div class="header">
-        <h2>No Jabra device detected</h2>
-        <button class="button-close">
+        <h2>Jabra Devices</h2>
+        <button id="btnJabraDialogClose" class="button-close">
             <i class="google-material-icons">close</i>
         </button>
     </div>
     <div class="content">
         <div class="text">
-            Jabra Support extension requires HID permissions to access the Jabra device
+            Connected devices:
+            <ul id="ulJabraConnectedDevices">
+                <li>No devices found</li>
+            </ul>
         </div>
-        <button class="button">
-            <span>Request permission</span>
+        <div class="text">
+            If your Jabra device does not appear on the list, please connect to it using the button below
+        </div>
+        <button id="btnJabraDialogHIDRequest" class="button">
+            <span>Connect</span>
         </button>
     </div>
 </div>

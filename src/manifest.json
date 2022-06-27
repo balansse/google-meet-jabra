@@ -20,6 +20,12 @@
       ]
     }
   ],
+  "background": {
+    "service_worker": "background.bundle.js"
+  },  
+  "action": {
+    "default_title": "Connect to Jabra device"
+  },
   "web_accessible_resources": [
     {
       "resources": [

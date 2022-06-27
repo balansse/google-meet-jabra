@@ -27,14 +27,49 @@ const startCallButton = () => Array.from(document.querySelectorAll('span')).find
     //Array.from(document.querySelectorAll('i.google-material-icons')).find(el => el.textContent === "present_to_all")?.closest('div[role="button"]').previousElementSibling
     //document.querySelector('[data-is-prejoin]').parentElement.querySelector('[role="button"]')
 
-const avButtonSpan = () => getElementByIconName('inventory')?.closest('[role="row"]');
-
 var deviceCallControlList = [];
-let jabraButton = { span: null, button: null, label: null };
 
 (async () => {
 
-    showJabraButton();
+    chrome.runtime.onMessage.addListener(async function(request, sender, sendResponse) {
+        if (request && request.type === 'consent') {
+            var consent = document.createElement("div");
+            consent.id = 'jabraConsentID';
+            fetch(chrome.runtime.getURL('/hid_dialog.html'))
+                .then(r => r.text())
+                .then(html => {
+                    consent.innerHTML = html;
+                    
+                    if (!document.body.classList.contains('modal-open')) {
+
+                        let ulConnetedDevices = consent.querySelector('#ulJabraConnectedDevices');
+                        if (deviceCallControlList.length > 0) {
+                            ulConnetedDevices.innerHTML = '';
+                            deviceCallControlList.forEach(deviceCallControl => {
+                                ulConnetedDevices.innerHTML += '<li>' + deviceCallControl.device.name + '</li>';
+                            });
+                        }
+
+                        document.body.appendChild(consent);
+                        document.body.classList.add('modal-open');
+
+                        document.getElementById('btnJabraDialogHIDRequest').onclick = async (e) => {
+                            let connectedDevice = await webHidPairing();
+                            if (connectedDevice) {
+                                document.body.removeChild(consent);
+                                document.body.classList.remove('modal-open');
+                            }
+                        };
+            
+                        document.getElementById('btnJabraDialogClose').onclick = (e) => {
+                            document.body.removeChild(consent);
+                            document.body.classList.remove('modal-open');
+                        };
+                    }
+                });
+        }
+        sendResponse(true);
+    });
 
     const jabraSdk = await init({
         transport: RequestedBrowserTransport.WEB_HID,
@@ -44,7 +79,7 @@ let jabraButton = { span: null, button: null, label: null };
         logger: {
             write(logEvent) {
                 if (logEvent.level === LogLevel.ERROR) {
-                    console.log(logEvent.message, logEvent.layer);
+                    console.error(logEvent.message, logEvent.layer);
                 }
                 // Ignore messages with other log levels
             }
@@ -78,7 +113,6 @@ let jabraButton = { span: null, button: null, label: null };
 
         deviceCallControl.deviceSignals.subscribe(
             (signal) => {
-                console.log(signal.type, signal.value);
                 switch (signal.type) {
                     case SignalType.PHONE_MUTE:
                         var button = micToggleButton();
@@ -109,7 +143,6 @@ let jabraButton = { span: null, button: null, label: null };
 
             // There is an available connection, create a new ICallControl
             deviceCallControl = await callControlFactory.createCallControl(device);
-            console.log('Connection remains - creating a new call control interface.');
 
             // Restore the state of the device.
             await addDeviceCallControl(deviceCallControl);
@@ -117,95 +150,45 @@ let jabraButton = { span: null, button: null, label: null };
 
         //Set status if already in a call (Instant meeting)
         if (endCallButton()) {
-            deviceCallControl.offHook(true);
+            try {
+                deviceCallControl.offHook(true);
+            }
+            catch (err) {
+                console.error(err);
+            }
         }
 
         deviceCallControlList.push(deviceCallControl);
 
-        updateConnectedDeviceNames();
+        updateConnectedDevicesCount();
     }
 
     function removeDeviceCallControl(removedDevice) {
-        console.log(`Removed: ${removedDevice.name} - ${removedDevice.productId}`);
-
         let removedDeviceIndex = deviceCallControlList.findIndex(deviceCallControl => deviceCallControl.device.serialNumber === removedDevice.serialNumber)
         if (removedDeviceIndex !== -1)
             deviceCallControlList.splice(removedDeviceIndex, 1);
 
-        updateConnectedDeviceNames();
+        updateConnectedDevicesCount();
     }
 
-    async function showJabraButton() {
-        let span = avButtonSpan();
-        if (span !== undefined) {
-            jabraButton.span = span.cloneNode(true);
-            jabraButton.button = jabraButton.span.querySelector('button');
-            ['jscontroller', 'jsaction', 'jsname'].forEach(attribute => jabraButton.button.removeAttribute(attribute));
-    
-            getElementByIconName('inventory', jabraButton.span).innerText = 'headset_mic';
-    
-            jabraButton.button.onclick = async (e) => {
-                let connectedDevice = webHidPairing();
-                if (connectedDevice && deviceCallControlList.length == 0) {
-                    jabraButton.label.innerText = JABRA_CONNECTING;
-                }
-            };
-    
-            let devices = await window.navigator.hid.getDevices();
-            let jabraHID = devices.find(element => element.vendorId === JABRA_VENDOR_ID);
-    
-            jabraButton.label = jabraButton.button.lastElementChild;
-            jabraButton.label.innerText = jabraHID ? JABRA_CONNECTING : JABRA_HID_CONNECTION_REQUEST;
-    
-            span.closest('div').append(jabraButton.span);
-        }
-    }
-
-    function updateConnectedDeviceNames() {
-        if (jabraButton.label !== null) {
-            let deviceNames = '';
-            deviceCallControlList.forEach(deviceCallControl => {
-                deviceNames = deviceNames.length > 0 ? deviceNames + ' | ' + deviceCallControl.device.name : deviceCallControl.device.name;
-            });
-
-            jabraButton.label.innerText = deviceNames;
-        }
+    function updateConnectedDevicesCount() {
+        let connectedDevicesCountString = deviceCallControlList.length === 0 ? '' : deviceCallControlList.length.toString();
+        chrome.runtime.sendMessage({badgeText: connectedDevicesCountString});
     }
 
     const callStartObserver = new MutationObserver(async (changes) => {
         for (const change of changes) {
             if (change.target.classList.contains('google-material-icons')) {
                 for (const node of change.addedNodes) {
-                    if (node.nodeType === Node.TEXT_NODE && node.data === 'call_end') {
-
-                        if (deviceCallControlList.length === 0) {
-
-                            let devices = await window.navigator.hid.getDevices();
-                            let jabraHID = devices.find(element => element.vendorId === JABRA_VENDOR_ID);
-                            if (!jabraHID) {
-                                fetch(chrome.runtime.getURL('/hid_dialog.html'))
-                                .then(r => r.text())
-                                .then(html => {
-                                    document.querySelector('c-wiz').insertAdjacentHTML('beforeend', html);
-    
-                                    document.querySelector('.jabra-hid-dialog .button').onclick = async (e) => {
-                                        let connectedDevice = await webHidPairing();
-                                        if (connectedDevice) {
-                                            document.querySelector('.jabra-hid-dialog').remove();
-                                        }
-                                    };
-    
-                                    document.querySelector('.jabra-hid-dialog .button-close').onclick = async (e) => {
-                                        document.querySelector('.jabra-hid-dialog').remove();
-                                    };
-                                });
-                            }
-                        }
-                        
+                    if (node.nodeType === Node.TEXT_NODE && node.data === 'call_end') {    
                         deviceCallControlList.forEach(async deviceCallControl => {
-                            deviceCallControl.offHook(true);
+                            try {
+                                deviceCallControl.offHook(true);
+                            }
+                            catch (err) {
+                                console.error(err);
+                            }
                         });
-                         
                         return;
                     }
                 }
@@ -226,7 +209,12 @@ let jabraButton = { span: null, button: null, label: null };
                         if (callEnded === true) {
 
                             deviceCallControlList.forEach(async deviceCallControl => {
-                                deviceCallControl.offHook(false);
+                                try {
+                                    deviceCallControl.offHook(false);
+                                }
+                                catch (err) {
+                                    console.error(err);
+                                }
                             });
 
                             return;
@@ -246,7 +234,12 @@ let jabraButton = { span: null, button: null, label: null };
             if (change.target === micToggleButton() && change.attributeName === 'data-is-muted') {
 
                 deviceCallControlList.forEach(deviceCallControl => {
-                    deviceCallControl.mute(change.target.dataset.isMuted === 'true');
+                    try {
+                        deviceCallControl.mute(change.target.dataset.isMuted === 'true');
+                    }
+                    catch (err) {
+                        console.error(err);
+                    }
                 });
 
                 return;
@@ -265,7 +258,7 @@ let jabraButton = { span: null, button: null, label: null };
                 deviceCallControl.releaseCallLock();
             }
             catch (err) {
-                console.log(err);
+                console.error(err);
             }
         });
     });

@@ -38,9 +38,10 @@ var options = {
   mode: process.env.NODE_ENV || 'development',
   entry: {
     contentScript: path.join(__dirname, 'src', 'pages', 'Content', 'index.js'),
+    background: path.join(__dirname, 'src', 'pages', 'Background', 'index.js'),
   },
   chromeExtensionBoilerplate: {
-    notHotReload: ['contentScript'],
+    notHotReload: ['contentScript','background'],
   },
   output: {
     filename: '[name].bundle.js',
