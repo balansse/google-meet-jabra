@@ -16,7 +16,7 @@ Main features:
 - Sync device mute status with Google Meet mute button
 - Mute Google Meet from the device
 
-Supports devices working through Jabra Link dongle; controlling devices connected directly to Bluetooth are not yet supported.
+Supports devices working through Jabra Link dongle or USB; controlling devices connected directly to Bluetooth are not yet supported.
 
 
 Tested with |
@@ -25,7 +25,8 @@ Jabra Evolve2 85 / Jabra Link 380
 Jabra Evolve2 75 / Jabra Link 380
 Jabra Elite 85h / Jabra Link 370
 Jabra Evolve 40
-Jabra 510
+Jabra Speak 510
+Jabra Speak 750
 ...
 
 
