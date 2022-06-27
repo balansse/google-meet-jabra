@@ -16,8 +16,9 @@ Main features:
 - Sync device mute status with Google Meet mute button
 - Mute Google Meet from the device
 
-Supports devices working through Jabra Link dongle or USB; controlling devices connected directly to Bluetooth are not yet supported.
+Supports devices working through Jabra Link dongle or USB; controlling devices connected directly to Bluetooth is not yet supported.
 
+**IMPORTANT NOTE**: You'll need to provide HID permissions to allow the extension to work with your Jabra device. Please click on the extension icon while being on the Google Meet page to connect.
 
 Tested with |
 --- |
