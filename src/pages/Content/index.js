@@ -20,7 +20,7 @@ const getElementByIconName = (iconName, parentElement) => {
     return element;
 }
 
-const micToggleButton = () => document.querySelector('button [data-icon-type="4"]')?.closest('button');
+const micToggleButton = () => document.querySelector('button[aria-label*="+ d)"]');
 const endCallButton = () => getElementByIconName('call_end')?.closest('button');
 const startCallButton = () => Array.from(document.querySelectorAll('span')).find(el => el.textContent === START_CALL[currentLanguage()]);
     //Language-agnostic selectors for Start Call button
@@ -79,7 +79,7 @@ var deviceCallControlList = [];
         logger: {
             write(logEvent) {
                 if (logEvent.level === LogLevel.ERROR) {
-                    console.error(logEvent.message, logEvent.layer);
+                    console.log(logEvent.message, logEvent.layer);
                 }
                 // Ignore messages with other log levels
             }
